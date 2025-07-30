@@ -1,12 +1,20 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
+
+# Simple in-memory "database" of test accounts
+USERS = {
+    "admin": {"password": "admin123", "role": "Admin"},
+    "customer": {"password": "cust123", "role": "Customer"},
+    "bizrep": {"password": "biz123", "role": "Business Rep"},
+}
 
 class OnlineOrderTrackerApp:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Startup Screen")
         self.root.geometry("300x150")
-        tk.Button(self.root, text="Next", command=self.open_login).pack(expand=True)
+        tk.Label(self.root, text="Welcome to Online Order Tracker", font=("Arial", 12)).pack(pady=10)
+        tk.Button(self.root, text="Next", width=20, command=self.open_login).pack(expand=True)
         self.root.mainloop()
 
     def open_login(self):
@@ -17,29 +25,34 @@ class LoginScreen:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("Login Screen")
-        self.window.geometry("350x200")
+        self.window.geometry("400x250")
 
-        tk.Label(self.window, text="Username").grid(row=0, column=0)
+        tk.Label(self.window, text="Username").grid(row=0, column=0, pady=5)
         self.username = tk.Entry(self.window)
-        self.username.grid(row=0, column=1)
+        self.username.grid(row=0, column=1, pady=5)
 
-        tk.Label(self.window, text="Password").grid(row=1, column=0)
+        tk.Label(self.window, text="Password").grid(row=1, column=0, pady=5)
         self.password = tk.Entry(self.window, show="*")
-        self.password.grid(row=1, column=1)
+        self.password.grid(row=1, column=1, pady=5)
 
-        tk.Button(self.window, text="Login", command=self.login).grid(row=2, column=0)
-        tk.Button(self.window, text="Request Access", command=self.open_request).grid(row=2, column=1)
+        tk.Button(self.window, text="Login", width=15, command=self.login).grid(row=2, column=0, pady=10)
+        tk.Button(self.window, text="Request Access / Forgot Password", command=self.open_request).grid(row=2, column=1, pady=10)
 
         self.window.mainloop()
 
     def login(self):
-        user = self.username.get()
-        pwd = self.password.get()
-        self.window.destroy()
-        if user == "admin":
-            AdminDashboard()
+        user = self.username.get().strip()
+        pwd = self.password.get().strip()
+
+        if user in USERS and USERS[user]["password"] == pwd:
+            role = USERS[user]["role"]
+            self.window.destroy()
+            if role == "Admin":
+                AdminDashboard()
+            else:
+                OrderTrackingScreen(role)
         else:
-            OrderTrackingScreen()
+            messagebox.showerror("Login Failed", "Invalid username or password")
 
     def open_request(self):
         self.window.destroy()
@@ -49,23 +62,29 @@ class UserRequestScreen:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("User Request Screen")
-        self.window.geometry("350x200")
+        self.window.geometry("400x220")
 
-        tk.Label(self.window, text="Name").grid(row=0, column=0)
+        tk.Label(self.window, text="Name").grid(row=0, column=0, pady=5)
         self.name = tk.Entry(self.window)
-        self.name.grid(row=0, column=1)
+        self.name.grid(row=0, column=1, pady=5)
 
-        tk.Label(self.window, text="Email").grid(row=1, column=0)
+        tk.Label(self.window, text="Email").grid(row=1, column=0, pady=5)
         self.email = tk.Entry(self.window)
-        self.email.grid(row=1, column=1)
+        self.email.grid(row=1, column=1, pady=5)
 
-        tk.Button(self.window, text="Submit", command=self.submit).grid(row=2, column=0)
-        tk.Button(self.window, text="Cancel", command=self.cancel).grid(row=2, column=1)
+        tk.Label(self.window, text="Request Type").grid(row=2, column=0, pady=5)
+        self.request_type = tk.StringVar(value="New Account")
+        tk.Radiobutton(self.window, text="New Account", variable=self.request_type, value="New Account").grid(row=2, column=1, sticky="w")
+        tk.Radiobutton(self.window, text="Password Reset", variable=self.request_type, value="Password Reset").grid(row=3, column=1, sticky="w")
+
+        tk.Button(self.window, text="Submit", command=self.submit).grid(row=4, column=0, pady=10)
+        tk.Button(self.window, text="Cancel", command=self.cancel).grid(row=4, column=1, pady=10)
 
         self.window.mainloop()
 
     def submit(self):
-        messagebox.showinfo("Success", "Request Submitted.")
+        request_info = f"Request Submitted:\nName: {self.name.get()}\nEmail: {self.email.get()}\nType: {self.request_type.get()}"
+        messagebox.showinfo("Success", request_info)
         self.window.destroy()
         LoginScreen()
 
@@ -74,23 +93,23 @@ class UserRequestScreen:
         LoginScreen()
 
 class OrderTrackingScreen:
-    def __init__(self):
+    def __init__(self, role):
         self.window = tk.Tk()
-        self.window.title("Order Tracking")
-        self.window.geometry("400x150")
+        self.window.title(f"{role} - Order Tracking")
+        self.window.geometry("450x200")
 
-        tk.Label(self.window, text="Tracking ID").grid(row=0, column=0)
+        tk.Label(self.window, text="Enter Tracking ID").grid(row=0, column=0, pady=5)
         self.tracking = tk.Entry(self.window)
-        self.tracking.grid(row=0, column=1)
+        self.tracking.grid(row=0, column=1, pady=5)
 
-        tk.Button(self.window, text="Track Order", command=self.track).grid(row=1, columnspan=2)
+        tk.Button(self.window, text="Track Order", command=self.track).grid(row=1, columnspan=2, pady=10)
 
         self.window.mainloop()
 
     def track(self):
         tracking_id = self.tracking.get()
         if tracking_id == "123":
-            messagebox.showinfo("Tracking Info", "Package: Shipped — ETA: 2 days.")
+            messagebox.showinfo("Tracking Info", "Order #123\nStatus: Out for Delivery\nETA: Today 6 PM\nCarrier: UPS")
         else:
             messagebox.showerror("Error", "Invalid Tracking ID.")
 
@@ -98,18 +117,38 @@ class AdminDashboard:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("Admin Dashboard")
-        self.window.geometry("500x300")
+        self.window.geometry("600x350")
 
-        self.text = tk.Text(self.window)
-        self.text.insert(tk.END, "Pending Requests:\n- John Doe\n\nOrders:\n- Order#123: Shipped\n")
-        self.text.pack()
+        tk.Label(self.window, text="Admin Dashboard", font=("Arial", 14, "bold")).pack(pady=10)
 
-        tk.Button(self.window, text="Export Report", command=self.export).pack()
+        columns = ("ID", "Customer", "Status")
+        self.tree = ttk.Treeview(self.window, columns=columns, show="headings")
+        for col in columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150)
+        self.tree.insert("", "end", values=("123", "John Doe", "Shipped"))
+        self.tree.insert("", "end", values=("124", "Jane Smith", "Pending"))
+        self.tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+        tk.Button(self.window, text="Approve Request", command=self.approve).pack(side="left", padx=10, pady=10)
+        tk.Button(self.window, text="Export Report", command=self.export).pack(side="left", padx=10, pady=10)
 
         self.window.mainloop()
 
+    def approve(self):
+        selected = self.tree.selection()
+        if selected:
+            item = self.tree.item(selected[0])["values"]
+            messagebox.showinfo("Approval", f"Approved request/order for {item[1]}")
+        else:
+            messagebox.showwarning("Warning", "No item selected")
+
     def export(self):
-        messagebox.showinfo("Export", "Report exported successfully.")
+        with open("report.txt", "w") as f:
+            f.write("Order Report\n\n")
+            for row in self.tree.get_children():
+                f.write(str(self.tree.item(row)["values"]) + "\n")
+        messagebox.showinfo("Export", "Report exported successfully as report.txt")
 
 if __name__ == "__main__":
     OnlineOrderTrackerApp()
