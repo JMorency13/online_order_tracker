@@ -1,0 +1,115 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class OnlineOrderTrackerApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Startup Screen")
+        self.root.geometry("300x150")
+        tk.Button(self.root, text="Next", command=self.open_login).pack(expand=True)
+        self.root.mainloop()
+
+    def open_login(self):
+        self.root.destroy()
+        LoginScreen()
+
+class LoginScreen:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Login Screen")
+        self.window.geometry("350x200")
+
+        tk.Label(self.window, text="Username").grid(row=0, column=0)
+        self.username = tk.Entry(self.window)
+        self.username.grid(row=0, column=1)
+
+        tk.Label(self.window, text="Password").grid(row=1, column=0)
+        self.password = tk.Entry(self.window, show="*")
+        self.password.grid(row=1, column=1)
+
+        tk.Button(self.window, text="Login", command=self.login).grid(row=2, column=0)
+        tk.Button(self.window, text="Request Access", command=self.open_request).grid(row=2, column=1)
+
+        self.window.mainloop()
+
+    def login(self):
+        user = self.username.get()
+        pwd = self.password.get()
+        self.window.destroy()
+        if user == "admin":
+            AdminDashboard()
+        else:
+            OrderTrackingScreen()
+
+    def open_request(self):
+        self.window.destroy()
+        UserRequestScreen()
+
+class UserRequestScreen:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("User Request Screen")
+        self.window.geometry("350x200")
+
+        tk.Label(self.window, text="Name").grid(row=0, column=0)
+        self.name = tk.Entry(self.window)
+        self.name.grid(row=0, column=1)
+
+        tk.Label(self.window, text="Email").grid(row=1, column=0)
+        self.email = tk.Entry(self.window)
+        self.email.grid(row=1, column=1)
+
+        tk.Button(self.window, text="Submit", command=self.submit).grid(row=2, column=0)
+        tk.Button(self.window, text="Cancel", command=self.cancel).grid(row=2, column=1)
+
+        self.window.mainloop()
+
+    def submit(self):
+        messagebox.showinfo("Success", "Request Submitted.")
+        self.window.destroy()
+        LoginScreen()
+
+    def cancel(self):
+        self.window.destroy()
+        LoginScreen()
+
+class OrderTrackingScreen:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Order Tracking")
+        self.window.geometry("400x150")
+
+        tk.Label(self.window, text="Tracking ID").grid(row=0, column=0)
+        self.tracking = tk.Entry(self.window)
+        self.tracking.grid(row=0, column=1)
+
+        tk.Button(self.window, text="Track Order", command=self.track).grid(row=1, columnspan=2)
+
+        self.window.mainloop()
+
+    def track(self):
+        tracking_id = self.tracking.get()
+        if tracking_id == "123":
+            messagebox.showinfo("Tracking Info", "Package: Shipped — ETA: 2 days.")
+        else:
+            messagebox.showerror("Error", "Invalid Tracking ID.")
+
+class AdminDashboard:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Admin Dashboard")
+        self.window.geometry("500x300")
+
+        self.text = tk.Text(self.window)
+        self.text.insert(tk.END, "Pending Requests:\n- John Doe\n\nOrders:\n- Order#123: Shipped\n")
+        self.text.pack()
+
+        tk.Button(self.window, text="Export Report", command=self.export).pack()
+
+        self.window.mainloop()
+
+    def export(self):
+        messagebox.showinfo("Export", "Report exported successfully.")
+
+if __name__ == "__main__":
+    OnlineOrderTrackerApp()
